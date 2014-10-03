@@ -1,0 +1,17 @@
+Entry #1
+Date: 01/10/14
+Start: 12:00 15:00
+	-Just installing VMware / Git / Learning git
+	-Managed to commit my first file
+	-Learning Python
+	-Wrote down differences in Perl and Python
+
+Entry #2
+Date: 03/10/14
+Start: 11:00 
+	-Fixed up Subset 0
+		-Print is fixed
+	-Started Subset 1
+
+
+
