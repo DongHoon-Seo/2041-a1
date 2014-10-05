@@ -4,6 +4,15 @@
 # written by andrewt@cse.unsw.edu.au September 2014
 # Modified by Dong Hoon Seo on September 2014.
 
+%variables = ();
+
+sub makeVariable {
+	my ($pyVar) = @_;
+	$plVar = '$'.$pyVar;
+	return $plVar;
+}
+
+
 while ($line = <>) {
 	if ($line =~ /^#!/ && $. == 1) {
 	
@@ -21,20 +30,28 @@ while ($line = <>) {
 		# so we need to add it explicitly to the Perl print statement
 		print "print \"\$$1\\n";
 		print "\";\n";
-		# $line =~ /^\s*print\s*"(.*)"\s*$/
 
-	} elsif ($line =~ m/^\s*[A-Z]+\s*=/gi) {
-		# Variables added in; Python has no $ where as Perl does. 
-		chomp $line;
-		$variable = $line;
-		$variable =~ s/\s+//g;
-		$variable =~ s/[0-9]+//g;
-		$variable =~ s/=//g;
-		#print "$variable\n";
-		$variable = '$'.$variable;
-		$number = $line;
-		$number =~ s/[^0-9]+//g;
-		print "$variable = $number;\n";
+	} elsif ($line =~ /^\s*[A-Z]+[0-9]*\s*=\s*[0-9]*\s*/gi) {
+		# Variables added in; Python has no $ where as Perl does.
+		# $strings = all the seperate words from the input line
+		# $word = single word $wordpl = word in perl format
+		# $perled = string has been changed to perl format;
+ 
+		chomp $1;
+		@strings = split(/\s+/,$1); 
+
+		foreach $word (@strings) {	
+			if($word =~ m/[A-Z]+/gi) {
+				$wordPl = makeVariable($word);
+				$perled =~ s/$word/$wordPl/g;
+			} elsif ($word =~ m/\-[0-9]+/g) {
+				$wordPl = $word;
+				$wordPl =~ s/\-//g;
+				$perled =~ s/$word/\- $wordPl/g;
+			}
+		}
+	
+		print "$perled;\n";
 	
 	} else {
 	
@@ -42,4 +59,5 @@ while ($line = <>) {
 		
 		print "#$line\n";
 	}
+
 }
