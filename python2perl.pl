@@ -6,7 +6,7 @@
 
 %variables = ();
 
-sub makeVariable {
+sub makeVariable () {
 	my ($pyVar) = @_;
 	$plVar = '$'.$pyVar;
 	return $plVar;
@@ -56,7 +56,7 @@ while ($line = <>) {
 	
 	} elsif ($line =~ m/\(*[A-Z]+[0-9]*\s*and|or|not\s*[A-Z]+[0-9]*\)*/gi) {
 
-		# This section deals with logical operators
+		# This section deals with logical operators 
 		# This section should trigger when a variable and a logical operator exist
 		# on the same line.		
 
@@ -67,13 +67,34 @@ while ($line = <>) {
 		foreach $word (@strings) {
 			if(($word =~ m/[A-Z]+[0-9]*/gi) && ($word !~ "and|or|not")) {
 				$wordPl = makeVariable($word);
-				if($perled !~ m/\$$word/g) {
+				if($perled !~ /\$$word/) {
 					$perled =~ s/$word/$wordPl/g;
 				}
 			}
 		}
 		
 		print "$perled;\n";
+
+	} elsif ($line =~ m/if\s*[A-Z]+[0-9]*.*:.*/gi) { 
+
+		# Reconstructing string when single if expression is found		
+
+		print "Found if statement\n";
+		chomp $line;
+		@strings = split(/\s+/,$line);
+		$output;
+
+		foreach $word (@strings) {
+			if($word =~ m/if/gi) {
+				$output = $output."if (";
+			} elsif ($word =~ m//gi) {
+
+			} 
+		}		
+
+	} elsif ($line =~ m/\(*[A-Z]+[0-9]*\s*\&|\||\^|\~|\<\<|\>\>\s*[A-Z]+[0-9]*\)*/gi) {
+
+		# This Section deals with bitwise operators
 
 	} else {
 	
