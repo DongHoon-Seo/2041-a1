@@ -11,7 +11,7 @@ sub format_Perl {
 	#This changes variables
 
 	if ($lines =~ m/.*[a-z0-9]+.*/gi) 
-	{
+	{	
 		@line = split(/".+"|\s+/,$lines); 
 		#@line = split(/\s+/,$plLine); 
 		foreach $word (@line) {	
@@ -19,12 +19,20 @@ sub format_Perl {
 			if ($word =~ m/.*".*/g) {
 				#print "word: found \"\n";
 				next;
-			} elsif ($word !~ "print") {
+			}  elsif ($word =~ /\bbreak\b/) {
+				#HANDLES BREAKS
+				$lines =~ s/$word/last/g;
+			} elsif ($word !~ /\bprint\b/gi) {
+				#if($word =~ \\)
 				if($word =~ m/[A-Z]+/gi) {
-					#$word =~ s/\W*//gi;
+					$word =~ s/\W*//gi;
 					$wordPl = makeVariable($word);
-					#print "word: $wordPl\n";
-					$lines =~ s/\Q$word/$wordPl/g;
+					#print "word: $word wordpl: $wordPl\n";
+					#print "line:$line\n";
+					if ($lines !~ /\$+$word/) {
+						$lines =~ s/\b\$*$word\b/$wordPl/g;
+					} #
+					#$lines =~ s/\Q$word/$wordPl/g;
 					#print "wordplline = $lines\n";
 				}
 			}
@@ -33,10 +41,10 @@ sub format_Perl {
 
 	#This deals with prints
 
-	if($lines =~ /\s*print.*/)
+	if($lines =~ /\s*print\s*.*/)
 	{
 		$string = $lines;
-		$string =~ s/\s*print\s*//g; 
+		$string =~ s/\s*\bprint\b\s*//g; 
 		$string =~ s/\s*$//g;
 		#print "String = $string\n";
 		#print "format_perl:$string\n";
@@ -54,7 +62,6 @@ sub format_Perl {
 	} 
 	
 	chomp $lines;
-	$lines = $lines.";\n";
 	return $lines;
 }
 
@@ -88,18 +95,113 @@ sub meticOperators {
 
 
 while ($line = <>) {
+
+#	print "BEFORE:LINES $line\n";
+
 	if ($line =~ /^#!/ && $. == 1) {
 	
 		# translate #! line 
 		
 		print "#!/usr/bin/perl -w\n";
 
-	} elsif  ($line !~ /^\s*$/) {
+	} elsif ($line =~ /^\s*$/) {
+		
+		# If empty line ignore.
 
-		print format_Perl($line);
+		next;
+
+	} elsif ($line !~ /^\s*$/) {
+
+		# If not empty we process line.
+
+		if ($line =~ /\bif\b/i) {
+			
+			#print "If is found";
+			#print "line:$line\n";
+			@if_statement = split(/if|:|;/,$line);	
+			$result_string = "";
+			$count = 0;
+
+			foreach $if_lines (@if_statement) {
+				chomp $line;
+				$line =~ s/;//;
+				#print "input : $if_lines\n";
+				if ($if_lines =~ /^\s*$/) {
+					next;
+				} else {
+					$count = $count + 1;
+					#print "splited:$if_lines\n";
+					$perl_string = format_Perl($if_lines);
+					#print "count =$count";
+					if ($count == 1) {
+						$line =~ s/$if_lines/$perl_string/;
+						$line =~ s/if */if (/i;
+						#$line =~ s/$if_lines/$perl_string/;
+						#print "perly:$perl_string\n";
+						$line =~ s/: ?/) {\n /;
+					} elsif ($count > 1) {
+						chomp $if_lines;
+						chomp $perl_string;
+						$line =~ s/$if_lines/   $perl_string\/n/;
+					}
+				}
+			}
+			$line =~ s/\/n/;\n/g;
+			print "$line}\n";
+
+		} elsif ($line =~ /\bwhile\b/i) { 
+			
+			@while_statement = split(/while|:|;/,$line);	
+			$result_string = "";
+			$count = 0;
+
+			foreach $while_lines (@while_statement) {
+				chomp $line;
+				$line =~ s/;//;
+				#print "input : $while_lines\n";
+				if ($while_lines =~ /^\s*$/) {
+					next;
+				} else {
+					$count = $count + 1;
+					#print "splited:$while_lines\n";
+					$perl_string = format_Perl($while_lines);
+					#print "count =$count";
+					if ($count == 1) {
+						#print "happening $line\n";
+						$line =~ s/$while_lines/$perl_string/;
+						$line =~ s/while */while (/i;
+						#$line =~ s/$if_lines/$perl_string/;
+						#print "$perl_string";
+						$line =~ s/: ?/) {\n /;
+					} elsif ($count > 1) {
+						#print "String:$perl_string\n";
+						chomp $while_lines;
+						#print "Stringmatch$while_lines\n";
+						#print "line : $line\n";
+						$line =~ s/\Q$while_lines\E/   $perl_string\/n/;
+			
+						#print "hello:$perl_string";
+						#print "$while_lines\n";
+					}
+				}
+			}
+			#$templine = $line;
+		#	print "linebefore : $line\n";
+			$line =~ s/\/n/;\n/g;
+			#$line =~ s/^\s*$/hi/;
+		#	print "lineafter : $line\n";
+			print "$line}\n";
+
+		} else {
+			#print "Else:$line\n";
+			print format_Perl($line).";\n";
+
+		}
 	
 	} elsif ($line =~ /^\s*$/) {
 		
+		# If empty line ignore.
+
 		next;
 
 	} else {
