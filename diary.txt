@@ -36,6 +36,13 @@ Start 17:00 - 19:00
 	-Finishing off Subset 2
 	-Starting Subset 3
 
+Entry #8
+Date 08/10/14
+Start 14:00 - 21:30
+	-Fixed bugs in Subset 2 and 1
+	-Restructured Assignment to better suit Subset 2 and some of 3.
+	-Starting subSet3
+
 
 
 
